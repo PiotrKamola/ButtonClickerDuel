@@ -18,9 +18,12 @@ public class main extends ApplicationAdapter {
 	BitmapFont font;
 
 	boolean newLetter = true;
+	boolean playing = false;
 	int randomNumber;
 	int score;
-	
+	int timer = 0;
+	int miliS = 0;
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
@@ -29,16 +32,25 @@ public class main extends ApplicationAdapter {
 	@Override
 	public void render () {
 		font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
-		ScreenUtils.clear(1, 0, 0, 1);
-
-//		System.out.println((int) ((Math.random() * (54 - 29)) + 29));
+		ScreenUtils.clear(0, 0, 0, 0);
+		miliS++;
+		if(miliS == 60){
+			timer++;
+			miliS = 0;
+		}
 
 		if(newLetter){
 			randomNumber = getRandomNumber(29, 55);
-			System.out.println("Score: " + score);
+//			System.out.println("Score: " + score);
 //			System.out.println(randomNumber);
-			System.out.println((char) (randomNumber + 36));
+//			System.out.println((char) (randomNumber + 36));
 			newLetter = false;
+		}
+
+		if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+			playing = true;
+			timer = 0;
+			score = 1;
 		}
 
 		if (Gdx.input.isKeyPressed(randomNumber)) {
@@ -50,8 +62,23 @@ public class main extends ApplicationAdapter {
 		}
 
 		batch.begin();
-		GlyphLayout scoreLayouyt = new GlyphLayout(font, "" + (char) (randomNumber + 36) + "\n \n" + score);
-		font.draw(batch, scoreLayouyt, Gdx.graphics.getWidth() / 2 - scoreLayouyt.width / 2, Gdx.graphics.getHeight() / 2 - scoreLayouyt.height / 2);
+
+//		GlyphLayout scoreLayouyt = new GlyphLayout(font, "" + (char) (randomNumber + 36) + "\n \n" + score);
+// 		font.draw(batch, scoreLayouyt, Gdx.graphics.getWidth() / 2 - scoreLayouyt.width / 2, Gdx.graphics.getHeight() / 2 - scoreLayouyt.height / 2);
+
+
+		GlyphLayout letterLayout = new GlyphLayout(font, "Letter:" + (char) (randomNumber + 36));
+		GlyphLayout scoreLayouyt = new GlyphLayout(font,"Score:" + score);
+		GlyphLayout timerLayout = new GlyphLayout(font,"Time:" + timer);
+		GlyphLayout startButtonLayout = new GlyphLayout(font,"START");
+
+//		font.draw(batch, timerLayout, 310, 410);
+		if(playing){
+			font.draw(batch, timerLayout, Gdx.graphics.getWidth()/2 - timerLayout.width / 2, 410);
+			font.draw(batch, letterLayout, Gdx.graphics.getWidth()/2 - letterLayout.width / 2, 310);
+			font.draw(batch, scoreLayouyt, Gdx.graphics.getWidth()/2 - scoreLayouyt.width / 2, 210);
+		}
+		font.draw(batch, startButtonLayout, Gdx.graphics.getWidth()/2 - startButtonLayout.width / 2, 100);
 
 		batch.end();
 	}
