@@ -183,7 +183,11 @@ public class mainMenuScreen implements Screen {
 
             if (!isCursorOnButton(timeButtonLayout, TIME_BUTTON_Y)) {
                 if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                    int timeLimit = 10;
+                    Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
                     System.out.println("TIME");
+                    this.dispose();
+                    game.setScreen(new gameScreen(game, timeLimit));
                 }
             }
             if (!isCursorOnButton(freeButtonLayout, FREE_PLAY_BUTTON_Y)) {

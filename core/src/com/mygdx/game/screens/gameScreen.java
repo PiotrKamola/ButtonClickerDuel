@@ -3,17 +3,17 @@ package com.mygdx.game.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.mygdx.game.buttonClickerDuel;
 
 public class gameScreen implements Screen {
-
+    final buttonClickerDuel game;
     SpriteBatch batch;
-    Texture img;
-
     BitmapFont font;
 
     boolean newLetter = true;
@@ -21,6 +21,14 @@ public class gameScreen implements Screen {
     int score;
     int timer = 0;
     int miliS = 0;
+
+    int timeLimit = 0;
+    boolean playing = true;
+
+    public gameScreen(buttonClickerDuel game, int timeLimit){
+        this.game = game;
+        this.timeLimit = timeLimit;
+    }
 
     @Override
     public void show() {
@@ -30,46 +38,65 @@ public class gameScreen implements Screen {
     @Override
     public void render(float delta) {
         font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
+        GlyphLayout logoLayout = new GlyphLayout(font, "BUTTON CLICKER DUEL");
         ScreenUtils.clear(0, 0, 0, 0);
+
+        game.batch.begin();
         miliS++;
-        if(miliS == 60){
+        if(miliS == 60 && playing){
             timer++;
             miliS = 0;
         }
-
-        if(newLetter){
-            randomNumber = getRandomNumber(29, 55);
-            newLetter = false;
+        if(timeLimit < timer){
+            playing = false;
+//            System.out.println("GAME OVER");
+//            this.dispose();
+//            game.setScreen(new mainMenuScreen(game));
         }
 
-        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-            timer = 0;
-            score = 1;
-        }
+            if (newLetter) {
+                randomNumber = getRandomNumber(29, 55);
+                newLetter = false;
+            }
 
-        if (Gdx.input.isKeyPressed(randomNumber)) {
-            score++;
-            newLetter = true;
-        }else if(Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) {
-            score--;
-            newLetter = true;
-        }
+            if(playing) {
+                if (Gdx.input.isKeyPressed(randomNumber)) {
+                    score++;
+                    newLetter = true;
+                } else if (Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) {
+                    score--;
+                    newLetter = true;
+                }
+            }
+            GlyphLayout letterLayout = new GlyphLayout(font, "Letter:" + (char) (randomNumber + 36));
+            GlyphLayout scoreLayouyt = new GlyphLayout(font, "Score:" + score);
+            GlyphLayout gameOverLayout = new GlyphLayout(font, "GAME OVER");
+            GlyphLayout timerLayout = new GlyphLayout(font, "Time:" + timer);
+            GlyphLayout backButtonLayout = new GlyphLayout(font, "Back to main menu");
 
-        batch.begin();
+            if(playing){
+                font.draw(game.batch, timerLayout, game.WIDTH / 2 - timerLayout.width / 2, 410);
+                font.draw(game.batch, letterLayout, game.WIDTH / 2 - letterLayout.width / 2, 310);
+                font.draw(game.batch, scoreLayouyt, game.WIDTH / 2 - scoreLayouyt.width / 2, 210);
+            }else{
+                font.draw(game.batch, gameOverLayout, game.WIDTH / 2 - gameOverLayout.width / 2, 450);
+                font.draw(game.batch, scoreLayouyt, game.WIDTH / 2 - scoreLayouyt.width / 2, 310);
+                font.draw(game.batch, backButtonLayout, game.WIDTH / 2 - backButtonLayout.width / 2, 210);
+                if (isCursorOnButton(backButtonLayout, 210)){
+                    Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+                } else {
+                    Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Hand);
 
-        GlyphLayout letterLayout = new GlyphLayout(font, "Letter:" + (char) (randomNumber + 36));
-        GlyphLayout scoreLayouyt = new GlyphLayout(font,"Score:" + score);
-        GlyphLayout timerLayout = new GlyphLayout(font,"Time:" + timer);
-        GlyphLayout startButtonLayout = new GlyphLayout(font,"START");
-        GlyphLayout restartButtonLayout = new GlyphLayout(font,"RESTART");
-
-        font.draw(batch, timerLayout, Gdx.graphics.getWidth()/2 - timerLayout.width / 2, 410);
-        font.draw(batch, letterLayout, Gdx.graphics.getWidth()/2 - letterLayout.width / 2, 310);
-        font.draw(batch, scoreLayouyt, Gdx.graphics.getWidth()/2 - scoreLayouyt.width / 2, 210);
-        font.draw(batch, restartButtonLayout, Gdx.graphics.getWidth()/2 - restartButtonLayout.width / 2, 100);
-
-
-        batch.end();
+                    if (!isCursorOnButton(backButtonLayout, 210)) {
+                        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                            System.out.println("BACK");
+                            this.dispose();
+                            game.setScreen(new mainMenuScreen(game));
+                        }
+                    }
+                }
+            }
+            game.batch.end();
     }
 
     @Override
@@ -94,11 +121,17 @@ public class gameScreen implements Screen {
 
     @Override
     public void dispose() {
-        batch.dispose();
-        img.dispose();
+
     }
 
-    public int getRandomNumber(int min, int max){
+    private int getRandomNumber(int min, int max){
         return (int) ((Math.random() * (max - min)) + min);
+    }
+
+    private boolean isCursorOnButton(GlyphLayout buttonLayout, int buttonX) {
+        return !(Gdx.input.getX() < buttonClickerDuel.WIDTH / 2 - buttonLayout.width / 2 + buttonLayout.width) ||
+                !(Gdx.input.getX() > buttonClickerDuel.WIDTH / 2 - buttonLayout.width / 2) ||
+                buttonClickerDuel.HEIGHT - Gdx.input.getY() >= buttonX ||
+                !(buttonClickerDuel.HEIGHT - Gdx.input.getY() > buttonX - buttonLayout.height);
     }
 }
